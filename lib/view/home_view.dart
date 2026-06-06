@@ -49,9 +49,8 @@ class HomeView extends StatelessWidget {
               
               HomeButton(icon: Icons.location_on , route: MaterialPageRoute(builder: (_) => CarteView())),
               HomeButton(icon: Icons.theater_comedy , route: MaterialPageRoute(builder: (_) => ActeurView())),
-              HomeButton(icon: Icons.confirmation_number , route: MaterialPageRoute(builder: (_) => CarteView())),
-              HomeButton(icon: Icons.theaters , route: MaterialPageRoute(builder: (_) => ActeurView())),
               HomeButton(icon: Icons.quiz, route: MaterialPageRoute(builder: (_) => QuizAccueilView())),
+              HomeButton(icon: Icons.theaters , route: MaterialPageRoute(builder: (_) => ActeurView())),
 
 
             ],

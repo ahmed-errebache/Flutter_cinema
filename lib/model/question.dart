@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+
 class Question {
   final int quiz_id;
   final String question;
@@ -11,6 +14,8 @@ class Question {
     required this.reponse,
   });
 
+  factory Question.fromRawJson(String str) => Question.fromJson(json.decode(str));
+
   factory Question.fromJson(Map<String, dynamic> j) {
     return Question(
       quiz_id: 0,
@@ -19,4 +24,14 @@ class Question {
       reponse: j['reponse'] as String,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is Question &&
+      other.question == question &&
+      other.reponse == reponse &&
+      listEquals(other.autres, autres);
+
+  @override
+  int get hashCode => Object.hash(question, reponse);
 }
