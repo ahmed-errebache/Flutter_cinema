@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\ahmed\\\\Documents\\\\cours_annee_2\\\\Developpement_pour_applications_mobiles\\\\TDs\\\\TDs\\\\td1\\\\lib\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(New-Item -ItemType File -Path \"c:\\\\Users\\\\ahmed\\\\Documents\\\\cours_annee_2\\\\Developpement_pour_applications_mobiles\\\\TDs\\\\TDs\\\\td1\\\\lib\\\\view\\\\role_view.dart\" -Force)",
+      "Bash(curl -s \"https://api.neotech.fr/acteurs/1003/roles\")",
+      "Bash(curl -s \"https://api.neotech.fr/acteurs?personne_id=eq.1003&select=*,roles\\(*\\)\")",
+      "Bash(curl -s \"https://api.neotech.fr/\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(data['paths'].keys\\(\\)\\)\\)\")",
+      "Bash(curl -s \"https://api.neotech.fr/equipes?limit=3\")",
+      "Bash(curl -s \"https://api.neotech.fr/equipes?personne_id=eq.1003&role=eq.acteur&limit=10\")",
+      "Bash(curl -s \"https://api.neotech.fr/equipes?select=alias,role,films\\(film_id,titre,annee,duree,votes,films_genres\\(genre_id,genres\\(genre_id,genre\\)\\)\\)&personne_id=eq.1003&role=eq.acteur&limit=5\")",
+      "Bash(curl -s \"https://api.neotech.fr/films?limit=1\")",
+      "Bash(curl -s \"https://api.neotech.fr/votes?limit=1\")",
+      "Bash(curl -s \"https://api.neotech.fr/films_genres?limit=2\")",
+      "Bash(curl -s \"https://api.neotech.fr/genres?limit=3\")",
+      "Bash(curl -s \"https://api.neotech.fr/equipes?select=alias,role,films\\(film_id,titre,annee,duree,films_genres\\(genre_id,genres\\(genre_id,genre\\)\\)\\)&personne_id=eq.1003&role=eq.acteur&limit=5\")",
+      "Bash(curl -s \"https://api.neotech.fr/films?select=film_id,titre,annee,duree,genres\\(genre_id,genre\\)&film_id=eq.101&limit=1\")",
+      "Bash(curl -s \"https://api.neotech.fr/equipes?select=alias,role,films\\(film_id,titre,annee,duree,genres\\(genre_id,genre\\)\\)&personne_id=eq.1003&role=eq.acteur&limit=5\")",
+      "Bash(flutter analyze *)",
+      "Bash(flutter pub *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\ahmed\\\\Documents\\\\cours_annee_2\\\\Developpement_pour_applications_mobiles\\\\TDs\\\\TDs\\\\Ahmed-errebache\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"Directory\"}else{\"File\"}}} | Format-Table -AutoSize)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\ahmed\\Documents\\cours_annee_2\\Developpement_pour_applications_mobiles\\TDs\\TDs\\td1\\lib\\view"
+    ]
+  }
+}

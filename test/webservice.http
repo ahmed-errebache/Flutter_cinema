@@ -1,0 +1,8 @@
+Get https://api.neotech.fr/acteurs
+
+###
+
+POST https://api.neotech.fr/rpc/etablissements_in_view
+Content-Type: application/json
+
+{ "min_lat": 47.5, "min_long": 6.5, "max_lat": 48.5, "max_long": 7.5 }
