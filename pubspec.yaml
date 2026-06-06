@@ -30,3 +30,6 @@ flutter:
   assets:
     - assets/images/profile.jpg
     - assets/images/cinema.svg
+    - assets/images/meme_excellent.jpg
+    - assets/images/meme_bien.jpg
+    - assets/images/meme_effort.jpg
