@@ -1,3 +1,4 @@
+import 'package:acteurs/service/quiz_progress_service.dart';
 import 'package:acteurs/view/quiz_selection_view.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,15 @@ class QuizAccueilView extends StatefulWidget {
 
 class _QuizAccueilViewState extends State<QuizAccueilView> {
   final _controller = TextEditingController();
+  final _progressService = QuizProgressService();
+
+  @override
+  void initState() {
+    super.initState();
+    _progressService.getPlayerName().then((nom) {
+      if (nom != null) _controller.text = nom;
+    });
+  }
 
   @override
   void dispose() {
@@ -17,9 +27,11 @@ class _QuizAccueilViewState extends State<QuizAccueilView> {
     super.dispose();
   }
 
-  void _commencer() {
+  void _commencer() async {
     final nom = _controller.text.trim();
     if (nom.isEmpty) return;
+    await _progressService.savePlayerName(nom);
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => QuizSelectionView(nomJoueur: nom)),

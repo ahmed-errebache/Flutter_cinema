@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:acteurs/model/question.dart';
 import 'package:acteurs/model/quiz.dart';
+import 'package:acteurs/view/quiz_score_view.dart';
 import 'package:flutter/material.dart';
 
 class QuizJeuView extends StatefulWidget {
@@ -24,10 +26,21 @@ class _QuizJeuViewState extends State<QuizJeuView> {
   String? _reponseChoisie;
   late List<String> _options;
 
+  static const int _dureeMax = 15;
+  int _tempsRestant = _dureeMax;
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
     _melangerOptions();
+    _demarrerTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   void _melangerOptions() {
@@ -35,59 +48,80 @@ class _QuizJeuViewState extends State<QuizJeuView> {
     _options = [...q.autres, q.reponse]..shuffle();
   }
 
-  void _repondre(String reponse) {
-    if (_reponseChoisie != null) return;
-    final bonne = widget.questions[_index].reponse;
-    setState(() {
-      _reponseChoisie = reponse;
-      if (reponse == bonne) _score++;
-    });
-
-    Future.delayed(Duration(milliseconds: 900), () {
+  void _demarrerTimer() {
+    _timer?.cancel();
+    _tempsRestant = _dureeMax;
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (!mounted) return;
-      if (_index + 1 < widget.questions.length) {
-        setState(() {
-          _index++;
-          _reponseChoisie = null;
-          _melangerOptions();
-        });
+      if (_tempsRestant == 0) {
+        timer.cancel();
+        _tempsEcoule();
       } else {
-        _afficherScore();
+        setState(() => _tempsRestant--);
       }
     });
   }
 
-  void _afficherScore() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: Text('Résultat'),
-        content: Text(
-          '${widget.nomJoueur} : $_score / ${widget.questions.length}',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+  void _tempsEcoule() {
+    setState(() => _reponseChoisie = '__timeout__');
+    Future.delayed(Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      _passerQuestion();
+    });
+  }
+
+  void _repondre(String reponse) {
+    if (_reponseChoisie != null) return;
+    _timer?.cancel();
+    final bonne = widget.questions[_index].reponse;
+    setState(() {
+      _reponseChoisie = reponse;
+      if (reponse == bonne) {
+        _score += 10 + _tempsRestant; // base 10 + bonus vitesse (max 25)
+      }
+    });
+
+    Future.delayed(Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      _passerQuestion();
+    });
+  }
+
+  void _passerQuestion() {
+    if (_index + 1 < widget.questions.length) {
+      setState(() {
+        _index++;
+        _reponseChoisie = null;
+        _melangerOptions();
+      });
+      _demarrerTimer();
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => QuizScoreView(
+            score: _score,
+            scoreMax: widget.questions.length * (10 + _dureeMax),
+            nbBonnes: _score ~/ 10,
+            total: widget.questions.length,
+            nomJoueur: widget.nomJoueur,
+            quiz: widget.quiz,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-            child: Text('Retour au menu'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text('Rejouer'),
-          ),
-        ],
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final question = widget.questions[_index];
     final total = widget.questions.length;
+    final timerRatio = _tempsRestant / _dureeMax;
+    final timerColor = timerRatio > 0.5
+        ? Colors.green
+        : timerRatio > 0.25
+            ? Colors.orange
+            : Colors.red;
 
     return Scaffold(
       body: Column(
@@ -132,19 +166,42 @@ class _QuizJeuViewState extends State<QuizJeuView> {
               ],
             ),
           ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.timer, color: timerColor),
+                SizedBox(width: 8),
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: timerRatio,
+                    backgroundColor: Colors.grey[200],
+                    color: timerColor,
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '$_tempsRestant s',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: timerColor),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 16),
+                  SizedBox(height: 8),
                   Text(
                     question.question,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 32),
+                  SizedBox(height: 24),
                   ..._options.map((option) => _boutonReponse(option, question.reponse)),
                 ],
               ),

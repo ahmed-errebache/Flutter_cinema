@@ -1,5 +1,6 @@
 import 'package:acteurs/model/quiz.dart';
 import 'package:acteurs/repository/quiz_repository.dart';
+import 'package:acteurs/service/quiz_progress_service.dart';
 import 'package:acteurs/view/quiz_jeu_view.dart';
 import 'package:custom_cached_image/custom_cached_image.dart';
 import 'package:flutter/material.dart';
@@ -14,18 +15,27 @@ class QuizSelectionView extends StatefulWidget {
 
 class _QuizSelectionViewState extends State<QuizSelectionView> {
   final _repository = QuizRepository();
+  final _progressService = QuizProgressService();
   late Future<List<Quiz>> _futureQuizzes;
+  final Map<int, int?> _scores = {};
+  final Map<int, bool> _joues = {};
 
   @override
-  void initState() {  
+  void initState() {
     super.initState();
-    _futureQuizzes = _repository.getQuizzes();
+    _futureQuizzes = _repository.getQuizzes().then((quizzes) async {
+      for (final q in quizzes) {
+        _scores[q.quiz_id] = await _progressService.getMeilleurScore(q.quiz_id);
+        _joues[q.quiz_id] = await _progressService.aDejaJoue(q.quiz_id);
+      }
+      return quizzes;
+    });
   }
 
   void _lancerQuiz(Quiz quiz) async {
     final questions = await _repository.getQuestions(quiz.quiz_id);
     if (!mounted) return;
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => QuizJeuView(
@@ -35,6 +45,17 @@ class _QuizSelectionViewState extends State<QuizSelectionView> {
         ),
       ),
     );
+    // Recharger la progression au retour
+    if (!mounted) return;
+    setState(() {
+      _futureQuizzes = _repository.getQuizzes().then((quizzes) async {
+        for (final q in quizzes) {
+          _scores[q.quiz_id] = await _progressService.getMeilleurScore(q.quiz_id);
+          _joues[q.quiz_id] = await _progressService.aDejaJoue(q.quiz_id);
+        }
+        return quizzes;
+      });
+    });
   }
 
   @override
@@ -97,10 +118,13 @@ class _QuizSelectionViewState extends State<QuizSelectionView> {
   }
 
   Widget _quizCard(Quiz quiz) {
+    final dejaJoue = _joues[quiz.quiz_id] ?? false;
+    final meilleurScore = _scores[quiz.quiz_id];
+
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+      elevation: dejaJoue ? 2 : 4,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _lancerQuiz(quiz),
@@ -126,9 +150,45 @@ class _QuizSelectionViewState extends State<QuizSelectionView> {
               ),
               SizedBox(width: 16),
               Expanded(
-                child: Text(
-                  quiz.quiz,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            quiz.quiz,
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        if (!dejaJoue)
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Nouveau !',
+                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (dejaJoue && meilleurScore != null) ...[
+                      SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.emoji_events, size: 14, color: Colors.amber),
+                          SizedBox(width: 4),
+                          Text(
+                            'Meilleur score : $meilleurScore pts',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Icon(Icons.chevron_right, color: Colors.grey),
