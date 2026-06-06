@@ -13,10 +13,14 @@ class Question {
 
   factory Question.fromJson(Map<String, dynamic> j) {
     return Question(
-      quiz_id: 0,
+      quiz_id: j['quiz_id'] as int,
       question: j['question'] as String,
-      autres: List<String>.from(j['autres']),
-      reponse: j['reponse'] as String,
+      autres: [
+        j['reponse_a'] as String,
+        j['reponse_b'] as String,
+        j['reponse_c'] as String,
+      ],
+      reponse: j['bonne_reponse'] as String,
     );
   }
 }

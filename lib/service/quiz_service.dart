@@ -22,8 +22,7 @@ Future<List<Question>> fetchQuestions(int quizId) async {
   );
   if (response.statusCode == 200) {
     final List data = json.decode(response.body);
-    final List questions = data[0]['questions'];
-    return questions.map((e) => Question.fromJson(e)).toList();
+    return data.map((e) => Question.fromJson(e)).toList();
   } else {
     throw Exception('Erreur API questions');
   }
